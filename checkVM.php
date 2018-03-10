@@ -6,7 +6,7 @@ Template Name: checkVM
 <?php
 //handle answered by voicemail
 
-require_once '/opt/bitnami/php/composer/vendor/t-conf.php';
+require '/opt/bitnami/php/composer/vendor/t-conf.php';
 chdir($ROOT_LOC);
 
 function getORD(){
@@ -37,17 +37,14 @@ function logTwil($str){
 
 if ($_REQUEST['AnsweredBy'] == 'human'){
 	//answered by human
-    $ord = getORD()[1];
-    header("content-type: text/xml");
-    echo '<?xml version="1.0" encoding="UTF-8"?>';
+	header("content-type: text/xml; charset=utf-8");
     echo '<Response>';
-    echo '<Redirect method="POST">https://www.swipetobites.com/wp-content/uploads/twilio/'.$ord.'</Redirect>';
+    echo '<Redirect method="POST">https://www.swipetobites.com/wp-content/uploads/twilio/'.getORD()[1].'</Redirect>';
     echo '</Response>';
 }
 else{
 	//answered by machine or other
-    header("content-type: text/xml");
-    echo '<?xml version="1.0" encoding="UTF-8"?>';
+	header("content-type: text/xml; charset=utf-8");
     echo '<Response>';
     echo '<Say>A customer wanted to make a order. Please call Hungry.</Say>';
     echo '<Redirect method="POST">https://www.swipetobites.com/twiliores/?Digits=7</Redirect>';

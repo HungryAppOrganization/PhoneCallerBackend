@@ -37,7 +37,7 @@ function logTwil($str){
 	fclose($handle);
 }
 
-function createXML($filename, $cusname, $busname, $menu){
+function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	//Create the XML file
 	$dom = new DOMDocument('1.0','UTF-8');
 	$dom->formatOutput = true;
@@ -47,21 +47,47 @@ function createXML($filename, $cusname, $busname, $menu){
 	$pause = $dom->createElement('Pause');
 	$pause->setAttribute('length',2);
 	$gather = $dom->createElement('Gather');
+	$gather->setAttribute('action',"https://www.swipetobites.com/twilio-menu/");
+	$gather->setAttribute('method','POST');
+	$gather->setAttribute('timeout',15);
+	$gather->setAttribute('numDigits',1);
+	$gather->appendChild($dom->createElement('Say', 'Are you ready for their order? Press 1 if yes, Press 2 if you need this message repeated.'));
+
+	$root->appendChild($pause);
+	$root->appendChild($dom->createElement('Say', 'Hello, this is a call from the Hungry app,​​ the customer’s name is '.$cusname.' and they would like to place an order to come pick up. Their phone number is '.num_to_text($cusphone).'.'));
+	$root->appendChild($gather);
+	$root->appendChild($dom->createElement('Redirect', "https://www.swipetobites.com/twilio-menu/?Digits=2"));
+
+	$dom->save($filename) or (logTwil('Create XML error: XML file Create Error') and die());
+
+	//create menu xml file
+	$domMen = new DOMDocument('1.0','UTF-8');
+	$domMen->formatOutput = true;
+	$rootMen = $domMen->createElement('Response');
+	$domMen->appendChild($rootMen);
+
+	$pause = $domMen->createElement('Pause');
+	$pause->setAttribute('length',2);
+	$gather = $domMen->createElement('Gather');
 	$gather->setAttribute('action',"https://www.swipetobites.com/twiliores/");
 	$gather->setAttribute('method','POST');
 	$gather->setAttribute('timeout',15);
 	$gather->setAttribute('numDigits',1);
-	$gather->appendChild($dom->createElement('Say', 'To repeat message press 1. To confirm order press 9'));
 
-	$root->appendChild($pause);
-	$root->appendChild($dom->createElement('Say', 'Hello '.$busname.'. '.$cusname.' would like to make a order.'));
-	$root->appendChild($pause);
-	$root->appendchild($dom->createElement('Say', $menu."."));
-	$root->appendChild($gather);
-	$root->appendChild($dom->createElement('Redirect', 'https://www.swipetobites.com/twiliores/?Digits=7'));
+	$rootMen->appendChild($pause);
+	$rootMen->appendChild($domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'.'));
+	$gather->appendChild($domMen->createElement('Say', 'Did you get all that? Press 1 if yes, press 2 if you need this message repeated.'));
+	$rootMen->appendChild($gather);
+	$domMen->save(substr($filename, 0, 15).'Menu.xml');
+}
 
-	//save in file
-	$dom->save($filename) or (logTwil('Create XML error: XML file Create Error') and die());
+//convert twilio number into text
+function num_to_text($num){
+	$text = '';
+	for ($i = 1; $i <= 11; $i++) {
+		$text = $text.$num[$i].',,,';
+	}
+	return $text;
 }
 
 //essential for implementing repeat message and voicemail
@@ -110,7 +136,7 @@ if (!empty($ordid)){
 	
 	if($result)	{		
 		$filename = $ordid.".xml";	
-		createXML($filename, $result[0]["fname"], $result[0]["name"], $result[0]["menu_item"]);
+		createXML($filename, $result[0]["fname"], $result[0]["name"], $result[0]["menu_item"], $result[0]["phone"]);
 		//in final deployment change to restaurant/business phone
 		makeCall($filename, $result[0]["phone"]);
 	}
