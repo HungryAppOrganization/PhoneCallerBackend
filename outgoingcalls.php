@@ -17,12 +17,10 @@ Template Name: outgoingcalls
 <?php
 // Use the REST API Client to make requests to the Twilio REST API
 require '/opt/bitnami/php/composer/vendor/autoload.php';
+require_once '/opt/bitnami/apps/wordpress/conf/t-conf.php';
 use Twilio\Rest\Client;
 
-/*define( "ABS_PATH", getcwd() . DIRECTORY_SEPARATOR );
-define( "LOG_FILE", ABS_PATH . "log.txt" );*/
-
-chdir("wp-content/uploads/twilio");
+chdir($ROOT_LOC);
 
 global $wpdb;
 global $call;
@@ -30,7 +28,7 @@ global $result;
 
 function logTwil($str){
 	//time at utc +0
-	chdir("log");
+	chdir($LOG);
 	$date = getdate();
 	$file = $date['month'].$date["mday"].$date['year']."twilio";
 	$handle = fopen($file, "a");
@@ -76,7 +74,17 @@ function createCallRecord($filename, $num, $sid){
 }
 
 function makeCall($filename, $cusphone){
-	
+	$client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
+	try {
+		$call = $client->calls->create($cusphone, $TWIL_NUM, array(
+			"url" => "https://www.swipetobites.com/checkvm", 
+			"machineDetection" => "Enable", 
+			"MachineDetectionTimeout" => "15"));
+		createCallRecord($filename, $cusphone, $call->sid);
+        logTwil("Started call: " . $call->sid);
+    } catch (Exception $e) {
+        logTwil("Error: " . $e->getMessage());
+    }
 }
 
 $ordid = $_REQUEST["ord"];
@@ -92,20 +100,11 @@ if (!empty($ordid)){
 		die();
 	}
 	
-
 	//Set up SQL and query database
-	$sql = 'SELECT order_request.order_id, customer.fname, customer.phone, restaurant.name, restaurant.bus_phone, order_request.menu_item FROM order_request LEFT JOIN customer ON order_request.customer_id = customer.cus_id LEFT JOIN restaurant ON order_request.bus_id = restaurant.bus_id WHERE order_request.order_id = "'.$ordid.'"';
+	$sql = $SQL_STATEMENT.$ordid.'"';
 	$result = $wpdb->get_results($sql, "ARRAY_A");
 	
-	//If the query returned results, loop through each result
-	if($result)	{
-		// echo "<p>id: ".$result[0]["order_id"]
-		// . "<br>Customer name: " . $result[0]["fname"]
-		// . "<br>Customer phone: " . $result[0]["phone"]
-		// . "<br>Restaurant name: " . $result[0]["name"]
-		// . "<br>Restaurant phone: " . $result[0]["bus_phone"]
-		// . "<br>Item Purchased: " . $result[0]["menu_item"]."</p>";
-		
+	if($result)	{		
 		$filename = $ordid.".xml";	
 		createXML($filename, $result[0]["fname"], $result[0]["name"], $result[0]["menu_item"]);
 		//in final deployment change to restaurant/business phone

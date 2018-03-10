@@ -6,9 +6,11 @@ Template Name: checkVM
 <?php
 //handle answered by voicemail
 
+require_once '/opt/bitnami/apps/wordpress/conf/t-conf.php';
+
 function getORD(){
-	//get main dir/replace/
-	//file to use/replace/
+	chdir($ROOT_LOC);
+	$file = "messageRepeatTrack";
 	$handle = fopen($file, "r");
 	if ($handle) {
 		while (($buffer = fgets($handle)) !== false) {
@@ -24,7 +26,7 @@ function getORD(){
 
 function logTwil($str){
 	//time at utc +0
-	//Add log file directory/replace/
+	chdir($LOG);
 	$date = getdate();
 	$file = $date['month'].$date["mday"].$date['year']."twilio";
 	$handle = fopen($file, "a");
@@ -32,7 +34,8 @@ function logTwil($str){
 	fclose($handle);
 }
 
-if ($_REQUEST['AnsweredBy']=='human'){
+if ($_REQUEST['AnsweredBy'] == 'human'){
+	//answered by human
     $ord = getORD()[1];
     header("content-type: text/xml");
     echo '<?xml version="1.0" encoding="UTF-8"?>';
@@ -41,12 +44,12 @@ if ($_REQUEST['AnsweredBy']=='human'){
     echo '</Response>';
 }
 else{
+	//answered by machine or other
     header("content-type: text/xml");
     echo '<?xml version="1.0" encoding="UTF-8"?>';
     echo '<Response>';
     echo '<Say>A customer wanted to make a order. Please call Hungry.</Say>';
     echo '<Redirect method="POST">https://www.swipetobites.com/twiliores/?Digits=7</Redirect>';
-    echo '<Say>'.getORD()[2].'</Say?';
     echo '</Response>';
     logTwil("Received voicemail with callID: ".getORD()[0]);
 }
