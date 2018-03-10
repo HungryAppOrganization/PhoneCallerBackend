@@ -17,7 +17,7 @@ Template Name: outgoingcalls
 <?php
 // Use the REST API Client to make requests to the Twilio REST API
 require '/opt/bitnami/php/composer/vendor/autoload.php';
-require_once '/opt/bitnami/apps/wordpress/conf/t-conf.php';
+require '/opt/bitnami/php/composer/vendor/t-conf.php';
 use Twilio\Rest\Client;
 
 chdir($ROOT_LOC);
@@ -27,6 +27,7 @@ global $call;
 global $result;
 
 function logTwil($str){
+	global $LOG;
 	//time at utc +0
 	chdir($LOG);
 	$date = getdate();
@@ -35,7 +36,6 @@ function logTwil($str){
 	fwrite($handle, $date['hours']."-".$date["minutes"]."-".$date['seconds']."=>\t".$str."\n");
 	fclose($handle);
 }
-
 
 function createXML($filename, $cusname, $busname, $menu){
 	//Create the XML file
@@ -74,6 +74,9 @@ function createCallRecord($filename, $num, $sid){
 }
 
 function makeCall($filename, $cusphone){
+	global $TWIL_ACC_SID;
+	global $TWIL_TOKEN;
+	global $TWIL_NUM;
 	$client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 	try {
 		$call = $client->calls->create($cusphone, $TWIL_NUM, array(
@@ -83,7 +86,8 @@ function makeCall($filename, $cusphone){
 		createCallRecord($filename, $cusphone, $call->sid);
         logTwil("Started call: " . $call->sid);
     } catch (Exception $e) {
-        logTwil("Error: " . $e->getMessage());
+		logTwil("Error: " . $e->getMessage());
+		die();
     }
 }
 

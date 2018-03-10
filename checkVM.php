@@ -6,10 +6,10 @@ Template Name: checkVM
 <?php
 //handle answered by voicemail
 
-require_once '/opt/bitnami/apps/wordpress/conf/t-conf.php';
+require_once '/opt/bitnami/php/composer/vendor/t-conf.php';
+chdir($ROOT_LOC);
 
 function getORD(){
-	chdir($ROOT_LOC);
 	$file = "messageRepeatTrack";
 	$handle = fopen($file, "r");
 	if ($handle) {
@@ -25,6 +25,7 @@ function getORD(){
 }
 
 function logTwil($str){
+	global $LOG;
 	//time at utc +0
 	chdir($LOG);
 	$date = getdate();

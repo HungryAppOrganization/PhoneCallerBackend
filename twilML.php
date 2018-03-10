@@ -5,13 +5,14 @@ Template Name: twiML
 ?>
 <?php
 require '/opt/bitnami/php/composer/vendor/autoload.php';
-require_once '/opt/bitnami/apps/wordpress/conf/t-conf.php';
+require_once '/opt/bitnami/php/composer/vendor/t-conf.php';
 use Twilio\Rest\Client;
 
 global $wpdb;
 
+chdir($ROOT_LOC);
 function getSID(){
-	chdir($ROOT_LOC);
+	
 	$file = "messageRepeatTrack";
 	$handle = fopen($file, "r");
 	if ($handle) {
@@ -27,6 +28,7 @@ function getSID(){
 }
 
 function logTwil($str){
+	global $LOG;
 	//time at utc +0
 	chdir($LOG);
 	$date = getdate();
@@ -45,7 +47,6 @@ if (!empty($_REQUEST["Digits"])){
 		//customer confirmed order
 		$orderRecord = substr($orderRecord, 0,15);
 
-		//$wpdb->update( $table, $data, $where, $format = null, $where_format = null );
 		// there should only be one order per customer, therefore wpdb update should only return 1
 		if (1 == $wpdb->update('order_request', array('confirm'=>1), array('order_id'=>$orderRecord))){
 			header("content-type: text/xml");
@@ -81,7 +82,7 @@ if (!empty($_REQUEST["Digits"])){
 	}
 	else{//if ($_REQUEST['Digits'] == '7'){
 		//no response within 15 seconds, number of times called triedmmmmm
-		chdir("log");
+		chdir($LOG);
 		$filename= './noresponse'.substr($orderRecord, 0,15);
 		if (file_exists($filename)) {
 			$callCount = file_get_contents($filename, FILE_USE_INCLUDE_PATH);
