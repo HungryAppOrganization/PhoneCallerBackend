@@ -51,10 +51,14 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$gather->setAttribute('method','POST');
 	$gather->setAttribute('timeout',15);
 	$gather->setAttribute('numDigits',1);
-	$gather->appendChild($dom->createElement('Say', 'Are you ready for their order? Press 1 if yes, Press 2 if you need this message repeated.'));
+	$say = $dom->createElement('Say', 'Are you ready for their order? Press 1 if yes, Press 2 if you need this message repeated.');
+	$say->setAttribute('voice','alice');
+	$gather->appendChild($say);
 
 	$root->appendChild($pause);
-	$root->appendChild($dom->createElement('Say', 'Hello, this is a call from the Hungry app,​​ the customers name is '.$cusname.' and they would like to place an order to come pick up. Their phone number is '.num_to_text($cusphone).'.'));
+	$say = $dom->createElement('Say', 'Hello, this is a call from the Hungry app,​​ the customers name is '.$cusname.' and they would like to place an order to come pick up. Their phone number is '.num_to_text($cusphone).'.');
+	$say->setAttribute('voice','alice');
+	$root->appendChild($say);
 	$root->appendChild($gather);
 	$root->appendChild($dom->createElement('Redirect', "https://www.swipetobites.com/twilio-menu/?Digits=2"));
 
@@ -75,8 +79,12 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$gather->setAttribute('numDigits',1);
 
 	$rootMen->appendChild($pause);
-	$rootMen->appendChild($domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'.'));
-	$gather->appendChild($domMen->createElement('Say', 'Did you get all that? Press 1 if yes, press 2 if you need this message repeated.'));
+	$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'.');
+	$say->setAttribute('voice','alice');
+	$rootMen->appendChild($say);
+	$say = $domMen->createElement('Say', 'Did you get all that? Press 1 if yes, press 2 if you need this message repeated.');
+	$say->setAttribute('voice','alice');
+	$gather->appendChild($say);
 	$rootMen->appendChild($gather);
 	$domMen->save(substr($filename, 0, 15).'Menu.xml');
 }
@@ -112,7 +120,7 @@ function makeCall($filename, $cusphone){
 		createCallRecord($filename, $cusphone, $call->sid);
         logTwil("Started call: " . $call->sid);
     } catch (Exception $e) {
-		logTwil("Error: " . $e->getMessage());
+		logTwil("Twilio call error: " . $e->getMessage());
 		die();
     }
 }

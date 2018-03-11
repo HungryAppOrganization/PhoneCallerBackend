@@ -56,7 +56,7 @@ function twilioSendMes($time, $message){
         $sqlMes = $SQL_MSG.$orderRecord.'"';
         $result = $wpdb->get_results($sqlMes, "ARRAY_A");
         try {
-            $message = $client->messages->create($result[0]["phone"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["fname"].", Hungry? here. Your order was confirmed by ".$result[0]["name"]." and will be ready ".$message.". Your order id is ".$orderRecord."."));
+            $message = $client->messages->create($result[0]["phone"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["fname"].", Hungry here. Your order was confirmed by ".$result[0]["name"]." and will be ready ".$message.". Your order id is ".$orderRecord."."));
             logTwil("Order confirmation message sent: " . $message->sid);
         } 
         catch (Exception $e) {
@@ -66,7 +66,7 @@ function twilioSendMes($time, $message){
         //send message to custome of confirmation
         header('content-type: text/xml');
         $output = new TwiML();
-        $output->say('Thank you for confirming order. '.$result[0]["fname"].' will be expecting their order in '.$time.' minutes. Have a nice day.');
+        $output->say('Thank you for confirming order. '.$result[0]["fname"].' will be expecting their order in '.$time.' minutes. Have a nice day.',['voice' => 'alice']);
         echo $output;
     }
     else{

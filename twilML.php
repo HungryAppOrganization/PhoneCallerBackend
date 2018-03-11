@@ -32,9 +32,9 @@ if (!empty($_REQUEST['Digits'])){
 	{	
 		//business wants to confirm receipt of order
 		$output = new TwiML();
-		$output->say('When should the customer expect to come pick up the food?');
+		$output->say('When should the customer expect to come pick up the food?',['voice' => 'alice']);
 		$gather = $output->gather(['action'=> 'https://www.swipetobites.com/twilioesttime/', 'method'=>'POST', 'timeout' => '15', 'numDigits'=>'1']);
-		$gather->say('Press 1 if in 15 minutes,, 2 if 20 to 30 minutes,, 3 for 35 to 45 minutes,, or 4 if roughly an hour or more.');
+		$gather->say('Press 1 if in 15 minutes,, 2 if 20 to 30 minutes,, 3 for 35 to 45 minutes,, or 4 if roughly an hour or more.',['voice' => 'alice']);
 		$output->redirect('https://www.swipetobites.com/twilioesttime',['method'=>'POST']);
 		echo $output;
 	}

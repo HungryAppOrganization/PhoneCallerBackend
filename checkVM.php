@@ -46,7 +46,7 @@ else{
 	//answered by machine or other
 	header("content-type: text/xml; charset=utf-8");
     echo '<Response>';
-    echo '<Say>A customer wanted to make a order. Please call Hungry.</Say>';
+    echo '<Say voice="alice">A customer wanted to make a order. Please call Hungry.</Say>';
     echo '</Response>';
     logTwil("Received voicemail with callID: ".getORD()[0]);
 }
