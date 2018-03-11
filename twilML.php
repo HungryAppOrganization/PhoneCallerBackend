@@ -3,7 +3,6 @@
 Template Name: twilML
 */
 ?>
-
 <?php
 require_once '/opt/bitnami/php/composer/vendor/autoload.php';
 require_once '/opt/bitnami/php/composer/vendor/t-conf.php';
@@ -28,14 +27,15 @@ function getSID(){
 
 //get dtmf response and accordingly run action, 1 repeat(redirect to page), 9 confirm order
 if (!empty($_REQUEST['Digits'])){
+	header('content-type: text/xml');
 	if($_REQUEST['Digits'] == '1')
 	{	
 		//business wants to confirm receipt of order
 		$output = new TwiML();
 		$output->say('When should the customer expect to come pick up the food?');
-		$gather = $output->gather(['action'=> 'https://www.swipetobites.com/twilio-estimate-time/', 'method'=>'POST', 'timeout' => '15', 'numDigits'=>'1']);
+		$gather = $output->gather(['action'=> 'https://www.swipetobites.com/twilioesttime/', 'method'=>'POST', 'timeout' => '15', 'numDigits'=>'1']);
 		$gather->say('Press 1 if in 15 minutes,, 2 if 20 to 30 minutes,, 3 for 35 to 45 minutes,, or 4 if roughly an hour or more.');
-		$output->redirect('https://www.swipetobites.com/twilio-estimate-time',['method'=>'POST']);
+		$output->redirect('https://www.swipetobites.com/twilioesttime',['method'=>'POST']);
 		echo $output;
 	}
 	else{
