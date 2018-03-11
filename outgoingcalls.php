@@ -45,7 +45,7 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$dom->appendChild($root);
 
 	$pause = $dom->createElement('Pause');
-	$pause->setAttribute('length',2);
+	$pause->setAttribute('length',1);
 	$gather = $dom->createElement('Gather');
 	$gather->setAttribute('action',"https://www.swipetobites.com/twilio-menu/");
 	$gather->setAttribute('method','POST');
@@ -54,7 +54,7 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$gather->appendChild($dom->createElement('Say', 'Are you ready for their order? Press 1 if yes, Press 2 if you need this message repeated.'));
 
 	$root->appendChild($pause);
-	$root->appendChild($dom->createElement('Say', 'Hello, this is a call from the Hungry app,​​ the customer’s name is '.$cusname.' and they would like to place an order to come pick up. Their phone number is '.num_to_text($cusphone).'.'));
+	$root->appendChild($dom->createElement('Say', 'Hello, this is a call from the Hungry app,​​ the customers name is '.$cusname.' and they would like to place an order to come pick up. Their phone number is '.num_to_text($cusphone).'.'));
 	$root->appendChild($gather);
 	$root->appendChild($dom->createElement('Redirect', "https://www.swipetobites.com/twilio-menu/?Digits=2"));
 
@@ -67,7 +67,7 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$domMen->appendChild($rootMen);
 
 	$pause = $domMen->createElement('Pause');
-	$pause->setAttribute('length',2);
+	$pause->setAttribute('length',1);
 	$gather = $domMen->createElement('Gather');
 	$gather->setAttribute('action',"https://www.swipetobites.com/twiliores/");
 	$gather->setAttribute('method','POST');
