@@ -47,7 +47,6 @@ else{
 	header("content-type: text/xml; charset=utf-8");
     echo '<Response>';
     echo '<Say>A customer wanted to make a order. Please call Hungry.</Say>';
-    echo '<Redirect method="POST">https://www.swipetobites.com/twiliores/?Digits=7</Redirect>';
     echo '</Response>';
     logTwil("Received voicemail with callID: ".getORD()[0]);
 }
