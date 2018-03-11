@@ -38,7 +38,7 @@ if ($order == 'DESC'){
     logTwil('TwilioMenu: No CallSid proved or matched');
     die();
 }
-
+header('content-type: text/xml');
 if ($_REQUEST['Digits'] == 1){
     //continue to say menu
     $order= substr($order, 0,15).'Menu.xml';

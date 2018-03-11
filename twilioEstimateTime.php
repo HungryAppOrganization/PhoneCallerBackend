@@ -3,7 +3,6 @@
 Template Name: twilioEstimateTime
 */
 ?>
-
 <?php
 require '/opt/bitnami/php/composer/vendor/autoload.php';
 require '/opt/bitnami/php/composer/vendor/t-conf.php';
@@ -44,7 +43,8 @@ function twilioSendMes($time, $message){
     global $wpdb;
     global $TWIL_ACC_SID;
 	global $TWIL_TOKEN;
-	global $TWIL_NUM;
+    global $TWIL_NUM;
+    global $SQL_MSG;
     //customer confirmed order, get estimated time
     $orderRecord = substr(getSID()[1], 0, 15);
 
@@ -53,7 +53,7 @@ function twilioSendMes($time, $message){
         // send confirmtion message to customer once order is complete
         $client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 
-        $sqlMes = 'SELECT customer.phone, customer.fname, restaurant.name FROM order_request LEFT JOIN customer ON order_request.customer_id = customer.cus_id LEFT JOIN restaurant ON order_request.bus_id = restaurant.bus_id WHERE order_request.order_id = "'.$orderRecord.'"';
+        $sqlMes = $SQL_MSG.$orderRecord.'"';
         $result = $wpdb->get_results($sqlMes, "ARRAY_A");
         try {
             $message = $client->messages->create($result[0]["phone"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["fname"].", Hungry? here. Your order was confirmed by ".$result[0]["name"]." and will be ready ".$message.". Your order id is ".$orderRecord."."));
@@ -64,6 +64,7 @@ function twilioSendMes($time, $message){
         }
 
         //send message to custome of confirmation
+        header('content-type: text/xml');
         $output = new TwiML();
         $output->say('Thank you for confirming order. '.$result[0]["fname"].' will be expecting their order in '.$time.' minutes. Have a nice day.');
         echo $output;
