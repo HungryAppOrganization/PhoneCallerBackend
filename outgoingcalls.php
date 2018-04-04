@@ -115,8 +115,9 @@ function makeCall($filename, $cusphone){
 	try {
 		$call = $client->calls->create($cusphone, $TWIL_NUM, array(
 			"url" => "https://www.swipetobites.com/checkvm", 
-			"machineDetection" => "Enable", 
-			"MachineDetectionTimeout" => "15"));
+			//"machineDetection" => "Enable", 
+			//"MachineDetectionTimeout" => "10"
+		));
 		createCallRecord($filename, $cusphone, $call->sid);
         logTwil("Started call: " . $call->sid);
     } catch (Exception $e) {
