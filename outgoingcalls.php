@@ -100,11 +100,41 @@ function num_to_text($num){
 
 //essential for implementing repeat message and voicemail
 function createCallRecord($filename, $num, $sid){
+	global $wpdb;
+	global $ATT;
+    global $ATT_id;
+	global $ATT_tsid;
+	
 	$uniCall = 'messageRepeatTrack';
 	$handle = fopen($uniCall, 'a') or (logTwil('Create call record error: Cannot open file '.$uniCall) and die());
 	$data = $sid.'=>'.$filename.PHP_EOL;
 	fwrite($handle, $data);
 	fclose($handle);
+
+	$wpdb->insert($ATT, array($ATT_id => $_REQUEST["ord"], $ATT_tsid => $sid));
+}
+
+//create a record of the current status of an order
+function logOrdStat($TwilSID){
+	global $wpdb;
+	global $STAT;
+    global $STAT_etime;
+    global $STAT_ack;
+	global $STAT_id;
+	global $STAT_tsid;
+	global $STAT_atime;
+	
+	$date = getdate();
+	$record_date = $date['mon']."/".$date['mday']."/".$date['year']."-".$date['hours'].":".$date['minutes'].":".$date['seconds'];
+	
+	$wpdb->insert( 
+	$STAT, 
+	array( 
+		$STAT_id => $_REQUEST["ord"],
+		$STAT_ack => 'N',
+		$STAT_etime => 999,
+		$STAT_atime => $record_date,
+		$STAT_tsid => $TwilSID));
 }
 
 function makeCall($filename, $cusphone){
@@ -119,11 +149,12 @@ function makeCall($filename, $cusphone){
 			//"MachineDetectionTimeout" => "10"
 		));
 		createCallRecord($filename, $cusphone, $call->sid);
-        logTwil("Started call: " . $call->sid);
+		logTwil("Started call: " . $call->sid);
+		logOrdStat($call->sid);
     } catch (Exception $e) {
 		logTwil("Twilio call error: " . $e->getMessage());
 		die();
-    }
+	}
 }
 
 $ordid = $_REQUEST["ord"];
@@ -148,6 +179,7 @@ if (!empty($ordid)){
 		createXML($filename, $result[0]["fname"], $result[0]["name"], $result[0]["menu_item"], $result[0]["phone"]);
 		//in final deployment change to restaurant/business phone
 		makeCall($filename, $result[0]["phone"]);
+		//logOrdStat('$call->sidgoeshere');
 	}
 }
 else{
