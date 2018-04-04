@@ -45,11 +45,16 @@ function twilioSendMes($time, $message){
 	global $TWIL_TOKEN;
     global $TWIL_NUM;
     global $SQL_MSG;
+    global $STAT;
+    global $STAT_etime;
+    global $STAT_ack;
+    global $STAT_id;
     //customer confirmed order, get estimated time
     $orderRecord = substr(getSID()[1], 0, 15);
 
     // there should only be one order per customer, therefore wpdb update should only return 1
     if (1 == $wpdb->update('order_request', array('confirm' => ''.$time.''), array('order_id'=>$orderRecord))){
+        $wpdb->update($STAT, array($STAT_etime => ''.$time.'', $STAT_ack => 'Y'), array($STAT_id => $orderRecord));
         // send confirmtion message to customer once order is complete
         $client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 
