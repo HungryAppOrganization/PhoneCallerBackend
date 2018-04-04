@@ -34,8 +34,8 @@ function logTwil($str){
 	fwrite($handle, $date['hours']."-".$date["minutes"]."-".$date['seconds']."=>\t".$str."\n");
 	fclose($handle);
 }
-
-if ($_REQUEST['AnsweredBy'] == 'human'){
+// if ($_REQUEST['AnsweredBy'] == 'human'){
+if (true){
 	//answered by human
 	header("content-type: text/xml; charset=utf-8");
     echo '<Response>';
