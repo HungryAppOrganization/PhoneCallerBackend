@@ -35,7 +35,7 @@ if ($handle) {
 }
 
 if ($order == 'DESC'){
-    logTwil('TwilioMenu: No CallSid proved or matched');
+    logTwil('TwilioMenu: No CallSid provided or matched');
     die();
 }
 header('content-type: text/xml');
