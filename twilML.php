@@ -11,21 +11,30 @@ use Twilio\Twiml;
 chdir($ROOT_LOC);
 
 function getSID(){
-	$file = "messageRepeatTrack";
-	$handle = fopen($file, "r");
-	if ($handle) {
-		while (($buffer = fgets($handle)) !== false) {
-			list($sid, $goToFile) = explode("=>", $buffer);
-			if ($sid === $_REQUEST['CallSid']){
-				fclose($handle);
-				return array($sid,$goToFile);
-			}
-		}
-		fclose($handle);
-	}
+	// $file = "messageRepeatTrack";
+	// $handle = fopen($file, "r");
+	// if ($handle) {
+	// 	while (($buffer = fgets($handle)) !== false) {
+	// 		list($sid, $goToFile) = explode("=>", $buffer);
+	// 		if ($sid === $_REQUEST['CallSid']){
+	// 			fclose($handle);
+	// 			return array($sid,$goToFile);
+	// 		}
+	// 	}
+	// 	fclose($handle);
+	// }
+
+	global $wpdb;
+	global $STAT;
+    global $STAT_id;
+	global $STAT_tsid;
+    
+    $sql = 'SELECT '.$STAT_id.' FROM '.$STAT.' WHERE '.$STAT_tsid.' = "'.$_REQUEST['CallSid'].'"';
+    $result = $wpdb->get_results($sql, "ARRAY_A");
+    return $result[0]['order_id'];
 }
 
-//get dtmf response and accordingly run action, 1 repeat(redirect to page), 9 confirm order
+//get dtmf response and accordingly run action
 if (!empty($_REQUEST['Digits'])){
 	header('content-type: text/xml');
 	if($_REQUEST['Digits'] == '1')
@@ -39,10 +48,13 @@ if (!empty($_REQUEST['Digits'])){
 		echo $output;
 	}
 	else{
-		$order = getSID()[1];
+		$sql = 'SELECT '.$STAT_id.' FROM '.$STAT.' WHERE '.$STAT_tsid.' = "'.$_REQUEST['CallSid'].'"';
+		$result = $wpdb->get_results($sql, "ARRAY_A");
+		$order = getSID();
+
 		//business want menu repeated or button 2 not pressed 
 		$output = new TwiML();
-		$output->redirect('https://www.swipetobites.com/wp-content/uploads/twilio/'.substr($order, 0,15).'Menu.xml', ['method'=>'POST']);
+		$output->redirect('https://www.swipetobites.com/wp-content/uploads/twilio/'.$order.'Menu.xml', ['method'=>'POST']);
 		echo $output;
 	}
 }

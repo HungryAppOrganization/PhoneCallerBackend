@@ -22,6 +22,15 @@ function getORD(){
 		}
 		fclose($handle);
 	}
+
+	global $wpdb;
+	global $ATT;
+    global $ATT_id;
+	global $ATT_tsid;
+    
+    $sql = 'SELECT '.$ATT_id.' FROM '.$ATT.' WHERE '.$ATT_tsid.' = "'.$_REQUEST['CallSid'].'"';
+    $result = $wpdb->get_results($sql, "ARRAY_A");
+    return $result[0]['order_id'];
 }
 
 function logTwil($str){
@@ -39,7 +48,7 @@ if (true){
 	//answered by human
 	header("content-type: text/xml; charset=utf-8");
     echo '<Response>';
-    echo '<Redirect method="POST">https://www.swipetobites.com/wp-content/uploads/twilio/'.getORD()[1].'</Redirect>';
+    echo '<Redirect method="POST">https://www.swipetobites.com/wp-content/uploads/twilio/'.getORD().'.xml'.'</Redirect>';
     echo '</Response>';
 }
 else{
@@ -48,6 +57,6 @@ else{
     echo '<Response>';
     echo '<Say voice="alice">A customer wanted to make a order. Please call Hungry.</Say>';
     echo '</Response>';
-    logTwil("Received voicemail with callID: ".getORD()[0]);
+    logTwil("Received voicemail with callID: ".$_REQUEST['CallSid']);
 }
 ?>

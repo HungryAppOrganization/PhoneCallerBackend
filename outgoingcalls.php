@@ -60,7 +60,7 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$say->setAttribute('voice','alice');
 	$root->appendChild($say);
 	$root->appendChild($gather);
-	$root->appendChild($dom->createElement('Redirect', "https://www.swipetobites.com/twilio-menu/?Digits=2"));
+	$root->appendChild($dom->createElement('Redirect', "https://www.swipetobites.com/twilio-menu/?Digits=99"));
 
 	$dom->save($filename) or (logTwil('Create XML error: XML file Create Error') and die());
 
@@ -98,43 +98,40 @@ function num_to_text($num){
 	return $text;
 }
 
-//essential for implementing repeat message and voicemail
-function createCallRecord($filename, $num, $sid){
-	global $wpdb;
-	global $ATT;
-    global $ATT_id;
-	global $ATT_tsid;
-	
-	$uniCall = 'messageRepeatTrack';
-	$handle = fopen($uniCall, 'a') or (logTwil('Create call record error: Cannot open file '.$uniCall) and die());
-	$data = $sid.'=>'.$filename.PHP_EOL;
-	fwrite($handle, $data);
-	fclose($handle);
+// //essential for implementing repeat message and voicemail
+// function createCallRecord($filename, $num, $sid){
+// 	global $wpdb;
+// 	global $ATT;
+//     global $ATT_id;
+// 	global $ATT_tsid;
+// 	global $ATT_time;
+// 	global $ATT_count;
 
-	$wpdb->insert($ATT, array($ATT_id => $_REQUEST["ord"], $ATT_tsid => $sid));
-}
+// 	$wpdb->insert($ATT, array($ATT_id => $_REQUEST["ord"], $ATT_tsid => $sid, $ATT_time => date('Y-m-d H:i:s'), $ATT_count => 0));
+	
+// }
 
 //create a record of the current status of an order
 function logOrdStat($TwilSID){
 	global $wpdb;
 	global $STAT;
-    global $STAT_etime;
-    global $STAT_ack;
 	global $STAT_id;
 	global $STAT_tsid;
-	global $STAT_atime;
-	
-	$date = getdate();
-	$record_date = $date['mon']."/".$date['mday']."/".$date['year']."-".$date['hours'].":".$date['minutes'].":".$date['seconds'];
+	global $STAT_ftime;
+    global $STAT_count;
+    global $STAT_ack;
+    global $STAT_etime; 
 	
 	$wpdb->insert( 
 	$STAT, 
 	array( 
 		$STAT_id => $_REQUEST["ord"],
+		$STAT_tsid => $TwilSID,
+		$STAT_ftime => date('Y-m-d H:i:s'),
+		$STAT_count => 0,
 		$STAT_ack => 'N',
 		$STAT_etime => 999,
-		$STAT_atime => $record_date,
-		$STAT_tsid => $TwilSID));
+		));
 }
 
 function makeCall($filename, $cusphone){
@@ -144,11 +141,12 @@ function makeCall($filename, $cusphone){
 	$client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 	try {
 		$call = $client->calls->create($cusphone, $TWIL_NUM, array(
-			"url" => "https://www.swipetobites.com/checkvm", 
+			//"url" => "https://www.swipetobites.com/checkvm", 
+			"url" => 'https://www.swipetobites.com/wp-content/uploads/twilio/'.$_REQUEST["ord"].'.xml',
 			//"machineDetection" => "Enable", 
 			//"MachineDetectionTimeout" => "10"
 		));
-		createCallRecord($filename, $cusphone, $call->sid);
+		//createCallRecord($filename, $cusphone, $call->sid);
 		logTwil("Started call: " . $call->sid);
 		logOrdStat($call->sid);
     } catch (Exception $e) {
@@ -179,7 +177,6 @@ if (!empty($ordid)){
 		createXML($filename, $result[0]["fname"], $result[0]["name"], $result[0]["menu_item"], $result[0]["phone"]);
 		//in final deployment change to restaurant/business phone
 		makeCall($filename, $result[0]["phone"]);
-		//logOrdStat('$call->sidgoeshere');
 	}
 }
 else{

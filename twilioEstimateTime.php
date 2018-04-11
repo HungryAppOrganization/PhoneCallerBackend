@@ -12,20 +12,14 @@ use Twilio\Twiml;
 chdir($ROOT_LOC);
 
 function getSID(){
-	$file = "messageRepeatTrack";
-	$handle = fopen($file, "r");
-	if ($handle) {
-		while (($buffer = fgets($handle)) !== false) {
-			list($sid, $goToFile) = explode("=>", $buffer);
-			if ($sid === $_REQUEST['CallSid']){
-				fclose($handle);
-				return array($sid,$goToFile);
-			}
-		}
-        fclose($handle);
-        logTwil('twilioEstimateTime: No CallSid provided or matched');
-        die();
-	}
+    global $wpdb;
+	global $ATT;
+    global $ATT_id;
+	global $ATT_tsid;
+    
+    $sql = 'SELECT '.$ATT_id.' FROM '.$ATT.' WHERE '.$ATT_tsid.' = "'.$_REQUEST['CallSid'].'"';
+    $result = $wpdb->get_results($sql, "ARRAY_A");
+    return $result[0]['order_id'];
 }
 
 function logTwil($str){
@@ -49,12 +43,14 @@ function twilioSendMes($time, $message){
     global $STAT_etime;
     global $STAT_ack;
     global $STAT_id;
+    global $STAT_ctime;
+
     //customer confirmed order, get estimated time
-    $orderRecord = substr(getSID()[1], 0, 15);
+    $orderRecord = getSID();
 
     // there should only be one order per customer, therefore wpdb update should only return 1
     if (1 == $wpdb->update('order_request', array('confirm' => ''.$time.''), array('order_id'=>$orderRecord))){
-        $wpdb->update($STAT, array($STAT_etime => ''.$time.'', $STAT_ack => 'Y'), array($STAT_id => $orderRecord));
+        $wpdb->update($STAT, array($STAT_etime => ''.$time.'', $STAT_ack => 'Y', $STAT_ctime => date('Y-m-d H:i:s')), array($STAT_id => $orderRecord));
         // send confirmtion message to customer once order is complete
         $client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 
