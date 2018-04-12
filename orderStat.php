@@ -13,18 +13,18 @@ function provide_info(){
     global $SQL_STATUS;
 
     //Set up SQL and query database
-	$sql = $SQL_STATUS.$_REQUEST["ord"].'"';
+	$sql = $SQL_STATUS.$_REQUEST["ordid"].'"';
     $result = $wpdb->get_results($sql, "ARRAY_A");
     return json_encode(array('errors' => array('none'), 'status' => ($result == null ? array('empty') : $result)));
 }
 
-if (!empty($_REQUEST["ord"])){
+if (!empty($_REQUEST["ordid"])){
     //Check entry
-	if (strlen($_REQUEST["ord"])!=15){
+	if (strlen($_REQUEST["ordid"])!=15){
         echo json_encode(array('errors' => array('Request cannot be completed.'), 'status' => array('null')));
 		die();
 	}
-	elseif (substr($_REQUEST["ord"], 0,3) != "ord"){
+	elseif (substr($_REQUEST["ordid"], 0,3) != "ord"){
         echo json_encode(array('errors' => array('Request cannot be completed.'), 'status' => array('null')));
 		die();
     }

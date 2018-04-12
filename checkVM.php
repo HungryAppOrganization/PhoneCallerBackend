@@ -30,7 +30,7 @@ function getORD(){
     
     $sql = 'SELECT '.$ATT_id.' FROM '.$ATT.' WHERE '.$ATT_tsid.' = "'.$_REQUEST['CallSid'].'"';
     $result = $wpdb->get_results($sql, "ARRAY_A");
-    return $result[0]['order_id'];
+    return $result[0][$ATT_id];
 }
 
 function logTwil($str){

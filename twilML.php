@@ -31,7 +31,7 @@ function getSID(){
     
     $sql = 'SELECT '.$STAT_id.' FROM '.$STAT.' WHERE '.$STAT_tsid.' = "'.$_REQUEST['CallSid'].'"';
     $result = $wpdb->get_results($sql, "ARRAY_A");
-    return $result[0]['order_id'];
+    return $result[0][$STAT_id];
 }
 
 //get dtmf response and accordingly run action

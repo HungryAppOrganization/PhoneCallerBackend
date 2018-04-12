@@ -125,7 +125,7 @@ function logOrdStat($TwilSID){
 	$wpdb->insert( 
 	$STAT, 
 	array( 
-		$STAT_id => $_REQUEST["ord"],
+		$STAT_id => $_REQUEST["ordid"],
 		$STAT_tsid => $TwilSID,
 		$STAT_ftime => date('Y-m-d H:i:s'),
 		$STAT_count => 0,
@@ -142,7 +142,7 @@ function makeCall($filename, $cusphone){
 	try {
 		$call = $client->calls->create($cusphone, $TWIL_NUM, array(
 			//"url" => "https://www.swipetobites.com/checkvm", 
-			"url" => 'https://www.swipetobites.com/wp-content/uploads/twilio/'.$_REQUEST["ord"].'.xml',
+			"url" => 'https://www.swipetobites.com/wp-content/uploads/twilio/'.$_REQUEST["ordid"].'.xml',
 			//"machineDetection" => "Enable", 
 			//"MachineDetectionTimeout" => "10"
 		));
@@ -155,28 +155,50 @@ function makeCall($filename, $cusphone){
 	}
 }
 
-$ordid = $_REQUEST["ord"];
+$ordid = $_REQUEST["ordid"];
+$cname = $_REQUEST["cname"];
+$cnum = $_REQUEST["cnum"];
+$ord = $_REQUEST["ord"];
+$ord_add = $_REQUEST["ord_add"];
+$rname = $_REQUEST["rname"];
+$rnum = $_REQUEST["rnum"];
+$pinfo = $_REQUEST["pinfo"];
+
 
 if (!empty($ordid)){
 	//Check entry
 	if (strlen($ordid)!=15){
 		logTwil("HTTP POST Error: Length requirement not met");
+		echo $ordid, $cname, $cnum, $ord, $ord_add, $rname, $rnum, $pinfo;
 		die();
 	}
 	elseif (substr($ordid, 0,3) != "ord"){
 		logTwil("HTTP POST Error: Begin requirements not met");
+		echo $ordid, $cname, $cnum, $ord, $ord_add, $rname, $rnum, $pinfo;
 		die();
 	}
+
+	$wpdb->insert( 
+	$ORD, 
+	array( 
+		$ORD_id => $ordid,
+		$ORD_cname => $cname,
+		$ORD_cnum => $cnum,
+		$ORD_ord => $ord,
+		$ORD_ord_add => $ord_add,
+		$ORD_rname => $rname,
+		$ORD_rnum => $rnum,
+		$ORD_pinfo => $pinfo
+		));
 	
 	//Set up SQL and query database
-	$sql = $SQL_STATEMENT.$ordid.'"';
+	$sql = $SQL_STATEMENT2.$ordid.'"';
 	$result = $wpdb->get_results($sql, "ARRAY_A");
 	
 	if($result)	{		
 		$filename = $ordid.".xml";	
-		createXML($filename, $result[0]["fname"], $result[0]["name"], $result[0]["menu_item"], $result[0]["phone"]);
-		//in final deployment change to restaurant/business phone
-		makeCall($filename, $result[0]["phone"]);
+		createXML($filename, $result[0]["cus_name"], $result[0]["res_name"], $result[0]["food_ord"], $result[0]["cus_num"]);
+		makeCall($filename, $result[0]["res_num"]);
 	}
 }
 else{
