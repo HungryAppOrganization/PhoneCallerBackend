@@ -37,7 +37,7 @@ function logTwil($str){
 	fclose($handle);
 }
 
-function createXML($filename, $cusname, $busname, $menu, $cusphone){
+function createXML($filename, $cusname, $busname, $menu, $menu_add, $cusphone){
 	//Create the XML file
 	$dom = new DOMDocument('1.0','UTF-8');
 	$dom->formatOutput = true;
@@ -77,9 +77,13 @@ function createXML($filename, $cusname, $busname, $menu, $cusphone){
 	$gather->setAttribute('method','POST');
 	$gather->setAttribute('timeout',15);
 	$gather->setAttribute('numDigits',1);
-
 	$rootMen->appendChild($pause);
-	$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'.');
+	if (!empty($menu_add)){
+		$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'. Alse, additionaly requirements are '.$menu_add.'.');
+	}
+	else{
+		$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'.');
+	}
 	$say->setAttribute('voice','alice');
 	$rootMen->appendChild($say);
 	$say = $domMen->createElement('Say', 'Did you get all that? Press 1 if yes, press 2 if you need this message repeated.');
@@ -146,7 +150,6 @@ function makeCall($filename, $cusphone){
 			//"machineDetection" => "Enable", 
 			//"MachineDetectionTimeout" => "10"
 		));
-		//createCallRecord($filename, $cusphone, $call->sid);
 		logTwil("Started call: " . $call->sid);
 		logOrdStat($call->sid);
     } catch (Exception $e) {
@@ -197,8 +200,10 @@ if (!empty($ordid)){
 	
 	if($result)	{		
 		$filename = $ordid.".xml";	
-		createXML($filename, $result[0]["cus_name"], $result[0]["res_name"], $result[0]["food_ord"], $result[0]["cus_num"]);
-		makeCall($filename, $result[0]["res_num"]);
+		createXML($filename, $result[0]["cus_name"], $result[0]["res_name"], $result[0]["food_ord"], $result[0]["food_ord_add"], $result[0]["cus_num"]);
+		if ($_REQUEST["debug"] == 0){
+			makeCall($filename, $result[0]["res_num"]);
+		}
 	}
 }
 else{
