@@ -36,32 +36,27 @@ function logTwil($str){
 }
 
 function noResponseMsg($order_id){
-	logTwil("No response.....");
     global $TWIL_ACC_SID;
 	global $TWIL_TOKEN;
     global $TWIL_NUM;
     global $SQL_MSG2;
+    global $ORD_cnum;
+    global $ORD_rname;
     global $wpdb;
 
 
     $ordID = getOrdID();
 
-    logTwil("Order record: " . $ordID);
     
     //send meesage to customer that restaurant didnt respond
 	$client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
-	logTwil("beyond client...");
-	$sqlMes = $SQL_MSG2.$ordID.'"';
-	logTwil("sql message: " . $SQL_MSG2);
-    $result = $wpdb->get_results($sqlMes, "ARRAY_A");
-    logTwil("Final result...");
+    $result = $wpdb->get_results($SQL_MSG2.$ordID.'"', "ARRAY_A");
 	try {
-		$message = $client->messages->create($result[0][$ORD_cnum], array('From' => $TWIL_NUM, 'Body' => "Restaurant gave no response for order ".$order_id."."));
-		logTwil("Restaurant no response: Order- ".$order_id.", TwilioSid- ". $message->sid);
+		$message = $client->messages->create($result[0][$ORD_cnum], array('From' => $TWIL_NUM, 'Body' => $result[0][$ORD_rname]." gave no response for order id: ".$order_id."."));
+		logTwil("Got voicemail when contacting ".$result[0][$ORD_rname]." for order id ".$order_id.", TwilioSid- ". $message->sid);
 	} 
 	catch (Exception $e) {
-		logTwil("Restaurant no response message error: " . $e->getMessage());
-		#logTwil("Restaurant no response message error texting: " . $result[0]["cus_num"]);
+		logTwil("Error delivering message with Twilio. " . $e->getMessage());
 	}
 	
 }
