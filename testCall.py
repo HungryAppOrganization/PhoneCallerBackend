@@ -1,4 +1,4 @@
-import urllib2
+import urllib
 import json, requests
 import io
 
@@ -16,7 +16,7 @@ def testCall():
 	)
 
 	resp = requests.get(url=url,params=params)
-	data = json.lodas(resp.txt)
+	data = json.loads(resp)
 
 	print (data)
 
