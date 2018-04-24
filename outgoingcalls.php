@@ -79,7 +79,7 @@ function createXML($filename, $cusname, $busname, $menu, $menu_add, $cusphone){
 	$gather->setAttribute('numDigits',1);
 	$rootMen->appendChild($pause);
 	if (!empty($menu_add)){
-		$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'. Alse, additionaly requirements are '.$menu_add.'.');
+		$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'. Also, additionaly requirements are '.$menu_add.'.');
 	}
 	else{
 		$say = $domMen->createElement('Say', $cusname.' wants to order​ '.$menu.'.');
