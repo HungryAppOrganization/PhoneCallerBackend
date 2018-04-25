@@ -29,10 +29,9 @@ global $result;
 function logTwil($str){
 	global $LOG;
 	//time at utc +0
-	chdir($LOG);
 	$date = getdate();
 	$file = $date['month'].$date["mday"].$date['year']."twilio";
-	$handle = fopen($file, "a");
+	$handle = fopen($LOG."/".$file, "a");
 	fwrite($handle, $date['hours']."-".$date["minutes"]."-".$date['seconds']."=>\t".$str."\n");
 	fclose($handle);
 }
@@ -102,18 +101,6 @@ function num_to_text($num){
 	return $text;
 }
 
-// //essential for implementing repeat message and voicemail
-// function createCallRecord($filename, $num, $sid){
-// 	global $wpdb;
-// 	global $ATT;
-//     global $ATT_id;
-// 	global $ATT_tsid;
-// 	global $ATT_time;
-// 	global $ATT_count;
-
-// 	$wpdb->insert($ATT, array($ATT_id => $_REQUEST["ord"], $ATT_tsid => $sid, $ATT_time => date('Y-m-d H:i:s'), $ATT_count => 0));
-	
-// }
 
 //create a record of the current status of an order
 function logOrdStat($TwilSID){
@@ -150,7 +137,7 @@ function makeCall($filename, $cusphone){
 			//"machineDetection" => "Enable", 
 			//"MachineDetectionTimeout" => "10"
 		));
-		logTwil("Started call: " . $call->sid);
+		logTwil($call->sid.": Started call");
 		logOrdStat($call->sid);
     } catch (Exception $e) {
 		logTwil("Twilio call error: " . $e->getMessage());
