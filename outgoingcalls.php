@@ -132,10 +132,7 @@ function makeCall($filename, $cusphone){
 	$client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 	try {
 		$call = $client->calls->create($cusphone, $TWIL_NUM, array(
-			//"url" => "https://www.swipetobites.com/checkvm", 
-			"url" => 'https://www.swipetobites.com/wp-content/uploads/twilio/'.$_REQUEST["ordid"].'.xml',
-			//"machineDetection" => "Enable", 
-			//"MachineDetectionTimeout" => "10"
+			"url" => 'https://www.swipetobites.com/wp-content/uploads/twilio/'.$_REQUEST["ordid"].'.xml'
 		));
 		logTwil($call->sid.": Started call");
 		logOrdStat($call->sid);
