@@ -11,7 +11,7 @@ use Twilio\Twiml;
 
 chdir($ROOT_LOC);
 
-function getSID(){
+function getOrdID(){
     global $wpdb;
 	global $STAT;
     global $STAT_id;
@@ -46,7 +46,7 @@ function twilioSendMes($time, $message){
     global $STAT_ctime;
 
     //customer confirmed order, get estimated time
-    $orderRecord = getSID();
+    $orderRecord = getOrdID();
 
     // there should only be one order per customer, therefore wpdb update should only return 1
     if (0 != $wpdb->update($STAT, array($STAT_etime => $time, $STAT_ack => 'Y', $STAT_ctime => date('Y-m-d H:i:s')), array($STAT_id => $orderRecord))){
