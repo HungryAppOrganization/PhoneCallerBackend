@@ -64,7 +64,7 @@ function twilioSendMes($time, $message, $cando=1){
                 logTwil($_REQUEST['CallSid'].": Order confirmation message error, " . $e->getMessage());
             }
 
-            //send message to custome of confirmation
+            // output to restaurant
             header('content-type: text/xml');
             $output = new TwiML();
             $output->say('Thank you for confirming order. '.$result[0]["cus_name"].' will be expecting their order in '.$time.' minutes. Have a nice day.',['voice' => 'alice']);
@@ -89,7 +89,7 @@ function twilioSendMes($time, $message, $cando=1){
             logTwil($_REQUEST['CallSid'].": Error sending no complete message, " . $e->getMessage());
         }
 
-        //send message to custome of confirmation
+        // output to restaurant
         header('content-type: text/xml');
         $output = new TwiML();
         $output->say('We will let the customer know that you cannot complete the order. Have a nice day.',['voice' => 'alice']);
@@ -113,7 +113,7 @@ function goBack(){
 if (!empty($_REQUEST['Digits'])){
     switch($_REQUEST['Digits']){
         case '0':
-            twilioSendMes(0,0,0);
+            twilioSendMes(0,'cannot complete', 0);
             break;
         case '1':
             twilioSendMes(15, 'in 15 minutes');
