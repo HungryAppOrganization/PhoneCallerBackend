@@ -70,7 +70,7 @@ if (is_null($order)){
     logTwil('TwilioMenu: No CallSid provided or matched');
     die();
 }
-logTwil($_REQUEST['CallSid'].": digit received is ".$_REQUEST['Digits']);
+logTwil($_REQUEST['CallSid'].": twilioMenu, digit received is ".$_REQUEST['Digits']);
 header('content-type: text/xml');
 if ($_REQUEST['Digits'] == 1){
     // continue to say menu
