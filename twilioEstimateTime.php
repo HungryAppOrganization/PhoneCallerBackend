@@ -58,10 +58,10 @@ function twilioSendMes($time, $message){
             
         try {
             $message = $client->messages->create($result[0]["cus_num"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["cus_name"].", Hungry here. Your order was confirmed by ".$result[0]["res_name"]." and will be ready ".$message.". Your order id is ".$orderRecord."."));
-            logTwil("Order confirmation message sent: " . $message->sid);
+            logTwil($_REQUEST['CallSid'].": Order confirmation message sent, " . $message->sid);
         } 
         catch (Exception $e) {
-            logTwil("Order confirmation message error: " . $e->getMessage());
+            logTwil($_REQUEST['CallSid'].": Order confirmation message error, " . $e->getMessage());
         }
 
         //send message to custome of confirmation
