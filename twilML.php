@@ -10,20 +10,7 @@ use Twilio\Twiml;
 
 chdir($ROOT_LOC);
 
-function getSID(){
-	// $file = "messageRepeatTrack";
-	// $handle = fopen($file, "r");
-	// if ($handle) {
-	// 	while (($buffer = fgets($handle)) !== false) {
-	// 		list($sid, $goToFile) = explode("=>", $buffer);
-	// 		if ($sid === $_REQUEST['CallSid']){
-	// 			fclose($handle);
-	// 			return array($sid,$goToFile);
-	// 		}
-	// 	}
-	// 	fclose($handle);
-	// }
-
+function getOrdID(){
 	global $wpdb;
 	global $STAT;
     global $STAT_id;
@@ -34,6 +21,17 @@ function getSID(){
     return $result[0][$STAT_id];
 }
 
+function logTwil($str){
+	global $LOG;
+	//time at utc +0
+	$date = getdate();
+	$file = $date['month'].$date["mday"].$date['year']."twilio";
+	$handle = fopen($LOG."/".$file, "a");
+	fwrite($handle, $date['hours']."-".$date["minutes"]."-".$date['seconds']."=>\t".$str."\n");
+	fclose($handle);
+}
+
+logTwil($_REQUEST['CallSid'].": twilML, digit received is ".$_REQUEST['Digits']);
 //get dtmf response and accordingly run action
 if (!empty($_REQUEST['Digits'])){
 	header('content-type: text/xml');
@@ -50,9 +48,9 @@ if (!empty($_REQUEST['Digits'])){
 	else{
 		$sql = 'SELECT '.$STAT_id.' FROM '.$STAT.' WHERE '.$STAT_tsid.' = "'.$_REQUEST['CallSid'].'"';
 		$result = $wpdb->get_results($sql, "ARRAY_A");
-		$order = getSID();
+		$order = getOrdID();
 
-		//business want menu repeated or button 2 not pressed 
+		//business want menu repeated 
 		$output = new TwiML();
 		$output->redirect('https://www.swipetobites.com/wp-content/uploads/twilio/'.$order.'Menu.xml', ['method'=>'POST']);
 		echo $output;
