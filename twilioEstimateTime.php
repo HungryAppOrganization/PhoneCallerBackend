@@ -33,7 +33,7 @@ function logTwil($str){
 	fclose($handle);
 }
 
-function twilioSendMes($time, $message){
+function twilioSendMes($time, $message, $cando=1){
     global $wpdb;
     global $TWIL_ACC_SID;
 	global $TWIL_TOKEN;
@@ -47,31 +47,53 @@ function twilioSendMes($time, $message){
 
     //customer confirmed order, get estimated time
     $orderRecord = getOrdID();
+    if ($cando){
+        // there should only be one order per customer, therefore wpdb update should only return 1
+        if (0 != $wpdb->update($STAT, array($STAT_etime => $time, $STAT_ack => 'Y', $STAT_ctime => date('Y-m-d H:i:s')), array($STAT_id => $orderRecord))){
+            // send confirmtion message to customer once order is complete
+            $client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 
-    // there should only be one order per customer, therefore wpdb update should only return 1
-    if (0 != $wpdb->update($STAT, array($STAT_etime => $time, $STAT_ack => 'Y', $STAT_ctime => date('Y-m-d H:i:s')), array($STAT_id => $orderRecord))){
-        // send confirmtion message to customer once order is complete
+            $sqlMes = $SQL_MSG2.$orderRecord.'"';
+            $result = $wpdb->get_results($sqlMes, "ARRAY_A");
+                
+            try {
+                $message = $client->messages->create($result[0]["cus_num"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["cus_name"].", Hungry here. Your order was confirmed by ".$result[0]["res_name"]." and will be ready ".$message.". Your order id is ".$orderRecord."."));
+                logTwil($_REQUEST['CallSid'].": Order confirmation message sent, " . $message->sid);
+            } 
+            catch (Exception $e) {
+                logTwil($_REQUEST['CallSid'].": Order confirmation message error, " . $e->getMessage());
+            }
+
+            //send message to custome of confirmation
+            header('content-type: text/xml');
+            $output = new TwiML();
+            $output->say('Thank you for confirming order. '.$result[0]["cus_name"].' will be expecting their order in '.$time.' minutes. Have a nice day.',['voice' => 'alice']);
+            echo $output;
+        }
+        else{
+            logTwil('WPDB access confirmation message error: 0 records affected or returned flase.');
+        }
+    }
+    else{
+        // restaurant cannot complete order
         $client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
 
         $sqlMes = $SQL_MSG2.$orderRecord.'"';
         $result = $wpdb->get_results($sqlMes, "ARRAY_A");
             
         try {
-            $message = $client->messages->create($result[0]["cus_num"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["cus_name"].", Hungry here. Your order was confirmed by ".$result[0]["res_name"]." and will be ready ".$message.". Your order id is ".$orderRecord."."));
-            logTwil($_REQUEST['CallSid'].": Order confirmation message sent, " . $message->sid);
+            $message = $client->messages->create($result[0]["cus_num"], array('From' => $TWIL_NUM,'Body' => "Hey ".$result[0]["cus_name"].", Hungry here. We are sorry but ".$result[0]["res_name"]." notified us that they cannot complete your order. Your order id was ".$orderRecord."."));
+            logTwil($_REQUEST['CallSid'].": Restaurant cannot complete order, " . $message->sid);
         } 
         catch (Exception $e) {
-            logTwil($_REQUEST['CallSid'].": Order confirmation message error, " . $e->getMessage());
+            logTwil($_REQUEST['CallSid'].": Error sending no complete message, " . $e->getMessage());
         }
 
         //send message to custome of confirmation
         header('content-type: text/xml');
         $output = new TwiML();
-        $output->say('Thank you for confirming order. '.$result[0]["cus_name"].' will be expecting their order in '.$time.' minutes. Have a nice day.',['voice' => 'alice']);
+        $output->say('We will let the customer know that you cannot complete the order. Have a nice day.',['voice' => 'alice']);
         echo $output;
-    }
-    else{
-        logTwil('WPDB access confirmation message error: 0 records affected or returned flase.');
     }
     
 }
@@ -90,6 +112,9 @@ function goBack(){
 //get dtmf response and accordingly run action, 1 repeat(redirect to page), 9 confirm order
 if (!empty($_REQUEST['Digits'])){
     switch($_REQUEST['Digits']){
+        case '0':
+            twilioSendMes(0,0,0);
+            break;
         case '1':
             twilioSendMes(15, 'in 15 minutes');
             break;
