@@ -47,12 +47,13 @@ function noResponseMsg($order_id){
 
     $ordID = getOrdID();
 
-    //send meesage to customer that restaurant didnt respond (got voicemail)
+    
+    //send meesage to customer that restaurant didnt respond
 	$client = new Client($TWIL_ACC_SID, $TWIL_TOKEN);
     $result = $wpdb->get_results($SQL_MSG2.$ordID.'"', "ARRAY_A");
 	try {
 		$message = $client->messages->create($result[0][$ORD_cnum], array('From' => $TWIL_NUM, 'Body' => $result[0][$ORD_rname]." gave no response for order id: ".$order_id."."));
-		logTwil($_REQUEST['CallSid'].": Got voicemail");
+		logTwil("Got voicemail when contacting ".$result[0][$ORD_rname]." for order id ".$order_id.", TwilioSid- ". $message->sid);
 	} 
 	catch (Exception $e) {
 		logTwil("Error delivering message with Twilio. " . $e->getMessage());
@@ -70,33 +71,38 @@ if (is_null($order)){
     logTwil('TwilioMenu: No CallSid provided or matched');
     die();
 }
-logTwil($_REQUEST['CallSid'].": digit received is ".$_REQUEST['Digits']);
+
 header('content-type: text/xml');
 if ($_REQUEST['Digits'] == 1){
     // continue to say menu
+    logTwil("Responded with a 1");
     $order= substr($order, 0,15).'Menu.xml';
 }
 elseif ($_REQUEST['Digits'] == 99){
 	// initial instruction will repeat twice, if no response then taken as voicemail and hangs up
 	if ($count >= 1){
-        //means it as already repeated twice, there fore taken as voicemail
+		
 		$wpdb->update($STAT, array($STAT_count => ++$count), array($STAT_tsid => $_REQUEST['CallSid']));
 		noResponseMsg($order);
 		echo '<Response><Hangup/></Response>';
 		die();
 	}
 	else{
-        //repeat message once more
 		$wpdb->update($STAT, array($STAT_count => ++$count), array($STAT_tsid => $_REQUEST['CallSid']));
 	}
 	$order= substr($order, 0,15).'.xml';
 }
 elseif ($_REQUEST['Digits'] == 3) {
+	logTwil("pressed 3");
 	echo '<Response><Hangup/></Response>';
 	$wpdb->update($STAT, array($STAT_count => ++$count), array($STAT_tsid => $_REQUEST['CallSid']));
-	restDoesNotDel($order);
-}
-else {
+	noResponseMsg($order);
+	die();
+
+} elseif ($_REQUEST['Digits'] == 4) {
+
+
+} else {
     // repeat initial message
     $order= substr($order, 0,15).'.xml';
 }
